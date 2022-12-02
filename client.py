@@ -35,7 +35,7 @@ object.put(Body=data)
 
 print("Requesting lambda")
 payload = {
-"command": "dot_map",
+"command": command,
 "in_file": in_file,
 "out_file": out_file,
 "aws_access_key_id": aws_access_key_id,
