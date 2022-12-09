@@ -14,7 +14,7 @@ session = None
 ## Can do - resize, crop, paste, other ImageFilter options
 
 def read(path, as_np_array = True):
-    
+
     print("Reading " + path + " from S3 with " + aws_access_key_id + " and " + aws_secret_access_key)
     s3 = session.resource("s3")
     obj = s3.Object('imageagent', path)
@@ -156,16 +156,12 @@ def lambda_handler(event, context):
     command = event["command"]
     in_file = event["in_file"]
     out_file = event["out_file"]
-    
+
     global aws_access_key_id, aws_secret_access_key, aws_session_token, session
     aws_access_key_id=event["aws_access_key_id"]
     aws_secret_access_key=event["aws_secret_access_key"]
     aws_session_token=event["aws_session_token"]
     session = boto3.session.Session(aws_access_key_id, aws_secret_access_key, aws_session_token)
-    
-    main(command, in_file, out_file)
-    return {
-        'statusCode': 200,
-        'body': json.dumps('Hello from Lambda!')
-    }
 
+    main(command, in_file, out_file)
+    return dict(event)

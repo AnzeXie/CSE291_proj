@@ -1,0 +1,291 @@
+{
+    "Comment": "A description of my state machine",
+    "StartAt": "Input Handler",
+    "States": {
+      "Input Handler": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:us-west-2:055637724942:function:PipelinedInputSide:$LATEST"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Decode Command"
+      },
+      "Decode Command": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.status",
+            "StringEquals": "success",
+            "Next": "Processing Option"
+          },
+          {
+            "Variable": "$.finished",
+            "BooleanEquals": true,
+            "Next": "Finished succesfully"
+          }
+        ],
+        "Default": "Command not found"
+      },
+      "Processing Option": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.next",
+            "StringEquals": "DotMap",
+            "Next": "Dot Map"
+          },
+          {
+            "Variable": "$.next",
+            "StringEquals": "Blur",
+            "Next": "Blur"
+          },
+          {
+            "Variable": "$.next",
+            "StringEquals": "DetectEdges",
+            "Next": "Detect Edges"
+          },
+          {
+            "Variable": "$.next",
+            "StringEquals": "BlackWhite",
+            "Next": "Grayscale"
+          },
+          {
+            "Variable": "$.next",
+            "StringEquals": "CompressColors",
+            "Next": "Compress Colors"
+          },
+          {
+            "Variable": "$.next",
+            "StringEquals": "Thumbnail",
+            "Next": "Thumbnail"
+          }
+        ],
+        "Default": "Default Option"
+      },
+      "Dot Map": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:us-west-2:055637724942:function:DotMap:$LATEST"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Output Handler"
+      },
+      "Output Handler": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:us-west-2:055637724942:function:PipelinedOutputSide:$LATEST"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Check for further steps"
+      },
+      "Check for further steps": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.finished",
+            "BooleanEquals": true,
+            "Next": "Finished succesfully"
+          },
+          {
+            "Variable": "$.finished",
+            "BooleanEquals": false,
+            "Next": "Input Handler"
+          }
+        ],
+        "Default": "Pass"
+      },
+      "Finished succesfully": {
+        "Type": "Succeed"
+      },
+      "Pass": {
+        "Type": "Pass",
+        "End": true
+      },
+      "Default Option": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:us-west-2:055637724942:function:Monolith:$LATEST"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Output Handler"
+      },
+      "Command not found": {
+        "Type": "Fail"
+      },
+      "Blur": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:us-west-2:055637724942:function:Blur:$LATEST"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Output Handler"
+      },
+      "Detect Edges": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:us-west-2:055637724942:function:DetectEdges:$LATEST"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Output Handler"
+      },
+      "Grayscale": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:us-west-2:055637724942:function:BlackWhite:$LATEST"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Output Handler"
+      },
+      "Compress Colors": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:us-west-2:055637724942:function:CompressColors:$LATEST"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Output Handler"
+      },
+      "Thumbnail": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:us-west-2:055637724942:function:Thumbnail:$LATEST"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Output Handler"
+      }
+    }
+  }
